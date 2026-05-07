@@ -1,0 +1,74 @@
+# Canonical team name -> list of known aliases
+# Used for entity resolution between external data sources and Betfair
+#
+# Format:
+#   "Canonical Name":
+#     - "Alias 1"
+#     - "Alias 2"
+
+"Manchester United":
+  - "Man United"
+  - "Man Utd"
+
+"Manchester City":
+  - "Man City"
+
+"Tottenham Hotspur":
+  - "Tottenham"
+  - "Spurs"
+
+"Wolverhampton Wanderers":
+  - "Wolverhampton"
+  - "Wolves"
+
+"Newcastle United":
+  - "Newcastle Utd"
+  - "Newcastle"
+
+"West Ham United":
+  - "West Ham"
+  - "West Ham Utd"
+
+"Brighton and Hove Albion":
+  - "Brighton"
+  - "Brighton & Hove Albion"
+
+"Nottingham Forest":
+  - "Nott'm Forest"
+  - "Nottm Forest"
+
+"Leicester City":
+  - "Leicester"
+
+"Sheffield United":
+  - "Sheffield Utd"
+
+"Paris Saint-Germain":
+  - "Paris SG"
+  - "PSG"
+
+"Bayern Munich":
+  - "Bayern München"
+  - "FC Bayern München"
+
+"Borussia Dortmund":
+  - "Dortmund"
+  - "BV Borussia Dortmund"
+
+"Atletico Madrid":
+  - "Atlético Madrid"
+  - "Atletico de Madrid"
+  - "Atlético de Madrid"
+
+"Real Madrid":
+  - "Real Madrid CF"
+
+"Barcelona":
+  - "FC Barcelona"
+
+"Inter Milan":
+  - "Internazionale"
+  - "Inter"
+
+"AC Milan":
+  - "Milan"

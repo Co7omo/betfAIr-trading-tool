@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/co7omo/workspace/betfAIr-trading-tool -maxdepth 2 -type f -name .*)",
+      "Bash(find /Users/co7omo/workspace/betfAIr-trading-tool -type f \\\\\\(-name *.py -o -name *.js -o -name *.ts -o -name *.go -o -name *.java -o -name *.rs \\\\\\))",
+      "Bash(docker --version)",
+      "Bash(psql --version)",
+      "Bash(for dir:*)",
+      "Bash(do touch:*)",
+      "Bash(done)",
+      "Bash(uv sync:*)",
+      "Bash(uv run:*)"
+    ]
+  }
+}

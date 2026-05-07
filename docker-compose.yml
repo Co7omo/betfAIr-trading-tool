@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: betfair_trading
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d betfair_trading"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build: .
+    command: uv run alembic upgrade head
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://trading:${POSTGRES_PASSWORD:-dev_password}@postgres:5432/betfair_trading
+    restart: "no"
+
+  app:
+    build: .
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://trading:${POSTGRES_PASSWORD:-dev_password}@postgres:5432/betfair_trading
+      BETFAIR_USERNAME: ${BETFAIR_USERNAME:-}
+      BETFAIR_PASSWORD: ${BETFAIR_PASSWORD:-}
+      BETFAIR_APP_KEY: ${BETFAIR_APP_KEY:-}
+      BETFAIR_CERT_PATH: /certs
+    volumes:
+      - ./certs:/certs:ro
+      - ./config:/app/config:ro
+    ports:
+      - "8080:8080"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  pgdata:
+  grafana_data:

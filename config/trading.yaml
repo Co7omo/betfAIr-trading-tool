@@ -1,0 +1,37 @@
+# Runtime trading parameters
+# Changes to this file are captured in config_snapshots for auditability
+
+trading:
+  # Decision window (minutes before kick-off)
+  window_start_minutes: 120
+  window_end_minutes: 10
+
+  # Polling intervals (seconds)
+  poll_interval: 10
+  discovery_interval: 300
+
+  # Edge threshold (net edge must exceed this to trigger a trade)
+  edge_threshold: 0.02
+
+  # Liquidity and spread filters
+  min_liquidity: 100.0
+  max_spread: 0.10
+
+risk:
+  # Fractional Kelly multiplier
+  kelly_fraction: 0.25
+
+  # Maximum stake as fraction of bankroll per market
+  max_stake_fraction: 0.02
+
+  # Daily stop-loss as fraction of bankroll
+  daily_stop_loss_fraction: 0.05
+
+  # Maximum open positions per event
+  max_positions_per_event: 1
+
+  # Initial bankroll
+  initial_bankroll: 1000.0
+
+kill_switch:
+  active: false
