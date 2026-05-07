@@ -39,12 +39,6 @@ def database_url(pg_container: PostgresContainer) -> str:
 
 
 @pytest.fixture(scope="session")
-def asyncpg_url(database_url: str) -> str:
-    """URL Postgres asyncpg-style per il pool applicativo."""
-    return database_url.replace("postgresql://", "postgresql://")
-
-
-@pytest.fixture(scope="session")
 def migrated_db(database_url: str) -> str:
     """Applica le migrazioni Alembic al container. Eseguita una volta per session."""
     os.environ["DATABASE_URL"] = database_url

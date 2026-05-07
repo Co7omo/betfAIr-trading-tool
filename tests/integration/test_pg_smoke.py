@@ -26,7 +26,21 @@ async def test_schema_tables_exist(pg_pool: asyncpg.Pool):
     assert expected.issubset(found), f"missing: {expected - found}"
 
 
-async def test_truncate_isolation(pg_pool: asyncpg.Pool):
+async def test_clean_db_first_inserts_visible(pg_pool: asyncpg.Pool):
+    """Insert a marker row; the second test must NOT see it."""
+    async with pg_pool.acquire() as conn:
+        await conn.execute(
+            "INSERT INTO markets (market_id, event_id, sport_id, market_type, start_time) "
+            "VALUES ($1, $2, '1', 'MATCH_ODDS', NOW())",
+            "1.SMOKE",
+            "EVT-SMOKE",
+        )
+        count = await conn.fetchval("SELECT COUNT(*) FROM markets")
+    assert count == 1
+
+
+async def test_clean_db_second_sees_empty_table(pg_pool: asyncpg.Pool):
+    """If autouse clean_db ran, the row from the previous test is gone."""
     async with pg_pool.acquire() as conn:
         count = await conn.fetchval("SELECT COUNT(*) FROM markets")
     assert count == 0
