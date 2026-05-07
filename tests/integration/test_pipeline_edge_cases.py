@@ -76,9 +76,7 @@ async def test_suspended_market_still_builds_features(pg_pool: asyncpg.Pool):
     await collector.run_poll_cycle(on_snapshot=fb.on_market_snapshot)
 
     async with pg_pool.acquire() as conn:
-        count = await conn.fetchval(
-            "SELECT COUNT(*) FROM feature_vectors WHERE market_id = '1.A'"
-        )
+        count = await conn.fetchval("SELECT COUNT(*) FROM feature_vectors WHERE market_id = '1.A'")
     assert count == 3
 
 

@@ -19,9 +19,7 @@ async def test_schema_tables_exist(pg_pool: asyncpg.Pool):
         "config_snapshots",
     }
     async with pg_pool.acquire() as conn:
-        rows = await conn.fetch(
-            "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
-        )
+        rows = await conn.fetch("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
     found = {r["tablename"] for r in rows}
     assert expected.issubset(found), f"missing: {expected - found}"
 

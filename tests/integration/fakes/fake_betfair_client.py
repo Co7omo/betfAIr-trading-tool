@@ -32,9 +32,7 @@ class FakeAsyncBetfairClient:
     ) -> list[MarketCatalogue]:
         return list(self._catalogue)
 
-    async def list_market_book(
-        self, market_ids: list[str]
-    ) -> list[MarketSnapshotBundle]:
+    async def list_market_book(self, market_ids: list[str]) -> list[MarketSnapshotBundle]:
         out: list[MarketSnapshotBundle] = []
         for mid in market_ids:
             queue = self._book_queues.get(mid, [])

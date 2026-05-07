@@ -59,8 +59,17 @@ async def test_feature_hash_deterministic(pg_pool: asyncpg.Pool):
     assert len(rows) == 2
     # The features should be structurally identical between the two cycles
     import json
-    f1 = json.loads(rows[0]["features"]) if isinstance(rows[0]["features"], str) else rows[0]["features"]
-    f2 = json.loads(rows[1]["features"]) if isinstance(rows[1]["features"], str) else rows[1]["features"]
+
+    f1 = (
+        json.loads(rows[0]["features"])
+        if isinstance(rows[0]["features"], str)
+        else rows[0]["features"]
+    )
+    f2 = (
+        json.loads(rows[1]["features"])
+        if isinstance(rows[1]["features"], str)
+        else rows[1]["features"]
+    )
     # `minutes_to_start` is hardcoded in make_book → identical
     assert f1 == f2
 

@@ -25,9 +25,7 @@ def team_mappings_file(tmp_path: Path) -> Path:
     so that resolve() finds them in self._mappings and returns confidence=1.0.
     """
     p = tmp_path / "mappings.yaml"
-    p.write_text(
-        '"Liverpool":\n  - "Liverpool FC"\n"Arsenal":\n  - "Arsenal FC"\n'
-    )
+    p.write_text('"Liverpool":\n  - "Liverpool FC"\n"Arsenal":\n  - "Arsenal FC"\n')
     return p
 
 
