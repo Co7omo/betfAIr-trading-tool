@@ -69,7 +69,7 @@ def make_book(
                 best_back_size=Decimal(str(sb)),
                 best_lay_price=Decimal(str(lay)),
                 best_lay_size=Decimal(str(sl)),
-                spread=Decimal(str(round(lay - back, 4))),
+                spread=Decimal(str(lay)) - Decimal(str(back)),
                 traded_volume=Decimal("100.0"),
             )
         )
