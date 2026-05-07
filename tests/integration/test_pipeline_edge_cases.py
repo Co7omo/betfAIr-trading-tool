@@ -130,7 +130,11 @@ async def test_entity_match_miss_does_not_break_pipeline(pg_pool: asyncpg.Pool, 
     await collector.run_poll_cycle(on_snapshot=fb.on_market_snapshot)
 
     async with pg_pool.acquire() as conn:
-        snap_count = await conn.fetchval("SELECT COUNT(*) FROM market_snapshots WHERE market_id='1.A'")
-        fv_count = await conn.fetchval("SELECT COUNT(*) FROM feature_vectors WHERE market_id='1.A'")
+        snap_count = await conn.fetchval(
+            "SELECT COUNT(*) FROM market_snapshots WHERE market_id = $1", "1.A"
+        )
+        fv_count = await conn.fetchval(
+            "SELECT COUNT(*) FROM feature_vectors WHERE market_id = $1", "1.A"
+        )
     assert snap_count == 3
     assert fv_count == 3
