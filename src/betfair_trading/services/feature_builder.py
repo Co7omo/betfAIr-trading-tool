@@ -149,7 +149,8 @@ class FeatureBuilder:
             )
             for r in rows
         ]
-        self._runner_meta_cache[market_id] = runners
+        if runners:
+            self._runner_meta_cache[market_id] = runners
         return runners
 
     @staticmethod
