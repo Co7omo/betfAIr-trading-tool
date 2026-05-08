@@ -115,6 +115,7 @@ class ExternalDataIngestor:
             "away_confidence": conf_a,
             "resolved_home": resolved_home,
             "resolved_away": resolved_away,
+            "history_loaded": self._loaded,
         }
 
         # Get Elo ratings as-of
