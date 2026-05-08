@@ -8,8 +8,8 @@ import asyncpg
 import structlog
 
 from betfair_trading.db.writer import insert_feature_vector
-from betfair_trading.models.features import FeatureSetVersion, FeatureVector
 from betfair_trading.models.external import ExternalFeatureBundle
+from betfair_trading.models.features import FeatureSetVersion, FeatureVector
 from betfair_trading.models.market import MarketSnapshotBundle, Runner
 from betfair_trading.services.external_ingestor import ExternalDataIngestor
 
