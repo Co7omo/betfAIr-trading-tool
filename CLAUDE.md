@@ -18,6 +18,12 @@ uv run pytest -v
 # Run a single test file
 uv run pytest tests/unit/test_elo_engine.py -v
 
+# Run only unit tests (default fast, no Docker)
+uv run pytest -v -m "not integration"
+
+# Run integration tests (requires Docker daemon running)
+uv run pytest -v -m integration
+
 # Lint
 uv run ruff check src/ tests/
 
