@@ -17,9 +17,11 @@ from betfair_trading.elo.form import FormCalculator
 from betfair_trading.entity_resolution.matcher import TeamMatcher
 from betfair_trading.observability.health import start_health_server
 from betfair_trading.observability.logging import configure_logging
+from betfair_trading.services.decision_engine import DecisionEngine
 from betfair_trading.services.external_ingestor import ExternalDataIngestor
 from betfair_trading.services.feature_builder import FeatureBuilder
 from betfair_trading.services.market_collector import MarketCollector
+from betfair_trading.services.probability_providers import BiasedStubProvider
 from betfair_trading.services.scheduler import Scheduler
 from betfair_trading.settings import Settings
 
@@ -70,6 +72,21 @@ async def main() -> None:
     # Initialize feature builder
     feature_builder = FeatureBuilder(pool, ingestor)
 
+    # Initialize decision engine (Phase 2: stub provider)
+    provider = BiasedStubProvider(home_bias=0.05)
+    decision_engine = DecisionEngine(
+        pool=pool,
+        provider=provider,
+        edge_threshold=trading.get("edge_threshold", 0.02),
+        min_liquidity=trading.get("min_liquidity", 100.0),
+        max_spread=trading.get("max_spread", 0.10),
+        commission_rate=0.05,
+        max_positions_per_event=trading.get("max_positions_per_event", 1),
+        window_start_minutes=trading.get("window_start_minutes", 120),
+        window_end_minutes=trading.get("window_end_minutes", 10),
+        daily_dd_max=trading.get("daily_stop_loss_fraction", 0.05),
+    )
+
     # Initialize market collector
     collector = MarketCollector(
         bf_client,
@@ -85,7 +102,12 @@ async def main() -> None:
         poll_interval=trading.get("poll_interval", 10),
         discovery_interval=trading.get("discovery_interval", 300),
     )
-    scheduler.set_snapshot_callback(feature_builder.on_market_snapshot)
+    async def on_snapshot_with_decision(bundle, snapshot_ids):
+        fv_ids = await feature_builder.on_market_snapshot(bundle, snapshot_ids)
+        if fv_ids:
+            await decision_engine.evaluate(bundle, snapshot_ids, fv_ids)
+
+    scheduler.set_snapshot_callback(on_snapshot_with_decision)
 
     # Start health check server
     health_runner = await start_health_server(pool, settings.health_port)
