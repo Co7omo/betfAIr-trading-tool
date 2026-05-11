@@ -5,6 +5,7 @@ from decimal import Decimal
 
 import asyncpg
 
+from betfair_trading.models.decision import Decision
 from betfair_trading.models.external import ExternalFeatureBundle
 from betfair_trading.models.features import FeatureVector
 from betfair_trading.models.market import MarketCatalogue, MarketSnapshotBundle
@@ -136,4 +137,36 @@ async def insert_config_snapshot(
         payload_json,
         config_hash,
         kill_switch_active,
+    )
+
+
+async def insert_decision(conn: asyncpg.Connection, decision: Decision) -> uuid.UUID:
+    return await conn.fetchval(
+        """INSERT INTO decisions
+           (decision_id, market_id, event_id, snapshot_id, decision_ts,
+            model_version, p_model, p_market, edge_gross, edge_net,
+            selected_runner_id, selected_edge_net,
+            gate_results, decision_outcome, rationale,
+            feature_vector_ids, config_snapshot_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+           RETURNING decision_id""",
+        decision.decision_id,
+        decision.market_id,
+        decision.event_id,
+        decision.snapshot_id,
+        decision.decision_ts,
+        decision.model_version,
+        json.dumps({str(k): v for k, v in decision.p_model.items()}),
+        json.dumps({str(k): v for k, v in decision.p_market.items()}),
+        json.dumps({str(k): v for k, v in decision.edge_gross.items()}),
+        json.dumps({str(k): v for k, v in decision.edge_net.items()}),
+        decision.selected_runner_id,
+        decision.selected_edge_net,
+        json.dumps(
+            {k: {"passed": v.passed, "reason": v.reason} for k, v in decision.gate_results.items()}
+        ),
+        decision.decision_outcome.value,
+        decision.rationale,
+        decision.feature_vector_ids,
+        decision.config_snapshot_id,
     )

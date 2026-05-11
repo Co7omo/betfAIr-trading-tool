@@ -70,9 +70,9 @@ uv run python -m betfair_trading.main
 
 ## Key Architecture Concepts
 
-**Currently implemented (Phase 1):** Market Data Collector, External Data Ingestor, Feature Builder (A0 baseline), Scheduler, DB audit layer.
+**Currently implemented (Phases 1-2):** Market Data Collector, External Data Ingestor, Feature Builder (A0+A1+A2), Scheduler, DB audit layer, Decision Engine + risk gates (with stub probability provider).
 
-**Not yet implemented:** Model Inference, Decision Engine, Execution Engine, P&L Engine, Kill Switch enforcement, Kafka messaging.
+**Not yet implemented:** Model Inference (real supervised), Execution Engine, P&L Engine, Kafka messaging.
 
 **Data flow:** Market polling (10s) + external data (Elo/form) -> Feature Builder -> Model Inference -> Decision Engine (edge check + risk gates) -> Execution Engine -> Betfair API. All steps append to the audit ledger.
 

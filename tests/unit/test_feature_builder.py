@@ -97,8 +97,10 @@ def test_build_a1_extends_a0_with_elo_fields():
     ext = ExternalFeatureBundle(
         event_key="L_vs_A",
         asof_ts=datetime(2026, 4, 1, tzinfo=UTC),
-        home_team="Liverpool", away_team="Arsenal",
-        elo_home=Decimal("1510.50"), elo_away=Decimal("1490.50"),
+        home_team="Liverpool",
+        away_team="Arsenal",
+        elo_home=Decimal("1510.50"),
+        elo_away=Decimal("1490.50"),
         elo_delta=Decimal("20.00"),
         match_confidence="HIGH",
     )
@@ -116,19 +118,28 @@ def test_build_a1_extends_a0_with_elo_fields():
 
 def test_build_a2_extends_a1_with_form_fields():
     a1 = {
-        "best_back": 2.0, "elo_home": 1510.0, "elo_away": 1490.0,
-        "elo_delta": 20.0, "match_confidence": "HIGH",
+        "best_back": 2.0,
+        "elo_home": 1510.0,
+        "elo_away": 1490.0,
+        "elo_delta": 20.0,
+        "match_confidence": "HIGH",
     }
     form_h5 = FormFeatures(
-        points_per_match=2.0, goal_diff_per_match=1.5, win_rate=0.6,
-        draw_rate=0.2, loss_rate=0.2,
+        points_per_match=2.0,
+        goal_diff_per_match=1.5,
+        win_rate=0.6,
+        draw_rate=0.2,
+        loss_rate=0.2,
     )
     ext = ExternalFeatureBundle(
         event_key="L_vs_A",
         asof_ts=datetime(2026, 4, 1, tzinfo=UTC),
-        home_team="Liverpool", away_team="Arsenal",
-        form_home_5=form_h5, form_away_5=None,
-        form_home_10=None, form_away_10=None,
+        home_team="Liverpool",
+        away_team="Arsenal",
+        form_home_5=form_h5,
+        form_away_5=None,
+        form_home_10=None,
+        form_away_10=None,
         match_confidence="HIGH",
     )
     a2 = FeatureBuilder._build_a2(a1, ext)

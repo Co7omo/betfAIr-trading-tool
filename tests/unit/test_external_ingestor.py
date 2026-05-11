@@ -15,8 +15,10 @@ def test_quality_flags_includes_history_loaded_false_when_not_loaded():
     ingestor = ExternalDataIngestor(elo, form, matcher, db_pool=None)
 
     bundle = ingestor.get_features_asof(
-        home_team="Liverpool", away_team="Arsenal",
-        asof_ts=datetime(2026, 4, 1, tzinfo=UTC), market_id="1.X",
+        home_team="Liverpool",
+        away_team="Arsenal",
+        asof_ts=datetime(2026, 4, 1, tzinfo=UTC),
+        market_id="1.X",
     )
 
     assert bundle is not None
@@ -32,8 +34,10 @@ def test_quality_flags_includes_history_loaded_true_after_load(tmp_path):
     ingestor._loaded = True
 
     bundle = ingestor.get_features_asof(
-        home_team="Liverpool", away_team="Arsenal",
-        asof_ts=datetime(2026, 4, 1, tzinfo=UTC), market_id="1.X",
+        home_team="Liverpool",
+        away_team="Arsenal",
+        asof_ts=datetime(2026, 4, 1, tzinfo=UTC),
+        market_id="1.X",
     )
 
     assert bundle.quality_flags["history_loaded"] is True
