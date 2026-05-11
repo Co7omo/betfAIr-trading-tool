@@ -38,9 +38,7 @@ async def _run_pipeline(pg_pool, fake, decision_engine, fb=None):
     """Run discovery + 1 poll cycle wired through fb + decision_engine."""
     if fb is None:
         fb = FeatureBuilder(pg_pool, external_ingestor=None)
-    collector = MarketCollector(
-        fake, pg_pool, window_start_minutes=120, window_end_minutes=10
-    )
+    collector = MarketCollector(fake, pg_pool, window_start_minutes=120, window_end_minutes=10)
 
     decisions_made = []
 
@@ -57,13 +55,15 @@ async def _run_pipeline(pg_pool, fake, decision_engine, fb=None):
 
 async def test_allow_path_with_biased_provider(pg_pool: asyncpg.Pool):
     fake = FakeAsyncBetfairClient()
-    fake.add_market(make_market(
-        market_id="1.A",
-        event_id="E-A",
-        home="Liverpool",
-        away="Arsenal",
-        start_time=datetime.now(UTC) + timedelta(minutes=60),
-    ))
+    fake.add_market(
+        make_market(
+            market_id="1.A",
+            event_id="E-A",
+            home="Liverpool",
+            away="Arsenal",
+            start_time=datetime.now(UTC) + timedelta(minutes=60),
+        )
+    )
     fake.queue_book("1.A", make_book(market_id="1.A", event_id="E-A"))
 
     engine = _make_engine(pg_pool, BiasedStubProvider(home_bias=0.05))
@@ -71,8 +71,7 @@ async def test_allow_path_with_biased_provider(pg_pool: asyncpg.Pool):
 
     async with pg_pool.acquire() as conn:
         rows = await conn.fetch(
-            "SELECT decision_outcome, selected_runner_id "
-            "FROM decisions WHERE market_id = '1.A'"
+            "SELECT decision_outcome, selected_runner_id FROM decisions WHERE market_id = '1.A'"
         )
     assert len(rows) == 1
     assert rows[0]["decision_outcome"] == "ALLOW"
@@ -101,14 +100,17 @@ async def test_block_soft_when_market_implied_provider(pg_pool: asyncpg.Pool):
 async def test_block_soft_low_liquidity(pg_pool: asyncpg.Pool):
     fake = FakeAsyncBetfairClient()
     fake.add_market(make_market(market_id="1.A"))
-    fake.queue_book("1.A", make_book(
-        market_id="1.A",
-        runner_quotes=[
-            (101, 2.0, 2.04, 50.0, 50.0),
-            (102, 3.5, 3.6, 50.0, 50.0),
-            (103, 4.0, 4.1, 50.0, 50.0),
-        ],
-    ))
+    fake.queue_book(
+        "1.A",
+        make_book(
+            market_id="1.A",
+            runner_quotes=[
+                (101, 2.0, 2.04, 50.0, 50.0),
+                (102, 3.5, 3.6, 50.0, 50.0),
+                (103, 4.0, 4.1, 50.0, 50.0),
+            ],
+        ),
+    )
 
     engine = _make_engine(pg_pool, BiasedStubProvider(home_bias=0.05))
     await _run_pipeline(pg_pool, fake, engine)
@@ -127,14 +129,17 @@ async def test_block_soft_low_liquidity(pg_pool: asyncpg.Pool):
 async def test_block_soft_high_spread(pg_pool: asyncpg.Pool):
     fake = FakeAsyncBetfairClient()
     fake.add_market(make_market(market_id="1.A"))
-    fake.queue_book("1.A", make_book(
-        market_id="1.A",
-        runner_quotes=[
-            (101, 2.0, 2.50, 500.0, 500.0),
-            (102, 3.5, 3.6, 500.0, 500.0),
-            (103, 4.0, 4.1, 500.0, 500.0),
-        ],
-    ))
+    fake.queue_book(
+        "1.A",
+        make_book(
+            market_id="1.A",
+            runner_quotes=[
+                (101, 2.0, 2.50, 500.0, 500.0),
+                (102, 3.5, 3.6, 500.0, 500.0),
+                (103, 4.0, 4.1, 500.0, 500.0),
+            ],
+        ),
+    )
 
     engine = _make_engine(pg_pool, BiasedStubProvider(home_bias=0.05))
     await _run_pipeline(pg_pool, fake, engine)
@@ -180,9 +185,7 @@ async def test_position_limit_blocks_second_allow(pg_pool: asyncpg.Pool):
 
     fb = FeatureBuilder(pg_pool, external_ingestor=None)
     engine = _make_engine(pg_pool, BiasedStubProvider(home_bias=0.05))
-    collector = MarketCollector(
-        fake, pg_pool, window_start_minutes=120, window_end_minutes=10
-    )
+    collector = MarketCollector(fake, pg_pool, window_start_minutes=120, window_end_minutes=10)
 
     async def on_snap(bundle, snapshot_ids):
         fv_ids = await fb.on_market_snapshot(bundle, snapshot_ids)
@@ -195,8 +198,7 @@ async def test_position_limit_blocks_second_allow(pg_pool: asyncpg.Pool):
 
     async with pg_pool.acquire() as conn:
         rows = await conn.fetch(
-            "SELECT decision_outcome FROM decisions "
-            "WHERE event_id = 'E-A' ORDER BY decision_ts"
+            "SELECT decision_outcome FROM decisions WHERE event_id = 'E-A' ORDER BY decision_ts"
         )
     assert len(rows) == 2
     assert rows[0]["decision_outcome"] == "ALLOW"
@@ -223,13 +225,9 @@ async def test_decision_persists_full_audit(pg_pool: asyncpg.Pool):
             "FROM decisions WHERE market_id = '1.A'"
         )
 
-    p_model = (
-        row["p_model"] if not isinstance(row["p_model"], str) else json.loads(row["p_model"])
-    )
+    p_model = row["p_model"] if not isinstance(row["p_model"], str) else json.loads(row["p_model"])
     p_market = (
-        row["p_market"]
-        if not isinstance(row["p_market"], str)
-        else json.loads(row["p_market"])
+        row["p_market"] if not isinstance(row["p_market"], str) else json.loads(row["p_market"])
     )
     edge_gross = (
         row["edge_gross"]
@@ -237,9 +235,7 @@ async def test_decision_persists_full_audit(pg_pool: asyncpg.Pool):
         else json.loads(row["edge_gross"])
     )
     edge_net = (
-        row["edge_net"]
-        if not isinstance(row["edge_net"], str)
-        else json.loads(row["edge_net"])
+        row["edge_net"] if not isinstance(row["edge_net"], str) else json.loads(row["edge_net"])
     )
     gate = (
         row["gate_results"]

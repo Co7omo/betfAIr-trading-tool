@@ -19,17 +19,32 @@ from betfair_trading.services.probability_providers import (
 
 def _make_bundle_and_runners():
     bundle = MarketSnapshotBundle(
-        market_id="1.A", event_id="E-A",
+        market_id="1.A",
+        event_id="E-A",
         snapshot_ts=datetime(2026, 5, 10, 12, 0, tzinfo=UTC),
         runners=[
-            RunnerSnapshot(runner_id=101, best_back_price=Decimal("2.0"),
-                           best_lay_price=Decimal("2.04"), traded_volume=Decimal("0")),
-            RunnerSnapshot(runner_id=102, best_back_price=Decimal("3.5"),
-                           best_lay_price=Decimal("3.6"), traded_volume=Decimal("0")),
-            RunnerSnapshot(runner_id=103, best_back_price=Decimal("4.0"),
-                           best_lay_price=Decimal("4.1"), traded_volume=Decimal("0")),
+            RunnerSnapshot(
+                runner_id=101,
+                best_back_price=Decimal("2.0"),
+                best_lay_price=Decimal("2.04"),
+                traded_volume=Decimal("0"),
+            ),
+            RunnerSnapshot(
+                runner_id=102,
+                best_back_price=Decimal("3.5"),
+                best_lay_price=Decimal("3.6"),
+                traded_volume=Decimal("0"),
+            ),
+            RunnerSnapshot(
+                runner_id=103,
+                best_back_price=Decimal("4.0"),
+                best_lay_price=Decimal("4.1"),
+                traded_volume=Decimal("0"),
+            ),
         ],
-        market_status="OPEN", inplay=False, total_matched=Decimal("1000"),
+        market_status="OPEN",
+        inplay=False,
+        total_matched=Decimal("1000"),
         minutes_to_start=60.0,
     )
     runners = [

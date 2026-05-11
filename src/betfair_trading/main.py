@@ -102,6 +102,7 @@ async def main() -> None:
         poll_interval=trading.get("poll_interval", 10),
         discovery_interval=trading.get("discovery_interval", 300),
     )
+
     async def on_snapshot_with_decision(bundle, snapshot_ids):
         fv_ids = await feature_builder.on_market_snapshot(bundle, snapshot_ids)
         if fv_ids:

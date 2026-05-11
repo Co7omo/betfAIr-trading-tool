@@ -163,8 +163,7 @@ async def insert_decision(conn: asyncpg.Connection, decision: Decision) -> uuid.
         decision.selected_runner_id,
         decision.selected_edge_net,
         json.dumps(
-            {k: {"passed": v.passed, "reason": v.reason}
-             for k, v in decision.gate_results.items()}
+            {k: {"passed": v.passed, "reason": v.reason} for k, v in decision.gate_results.items()}
         ),
         decision.decision_outcome.value,
         decision.rationale,

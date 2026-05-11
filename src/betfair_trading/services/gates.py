@@ -30,9 +30,7 @@ def check_edge_threshold(edge_net: float, threshold: float) -> tuple[bool, str]:
     return True, "ok"
 
 
-def check_liquidity(
-    best_back_size: Decimal | None, min_liquidity: float
-) -> tuple[bool, str]:
+def check_liquidity(best_back_size: Decimal | None, min_liquidity: float) -> tuple[bool, str]:
     if best_back_size is None:
         return False, "size_missing"
     if float(best_back_size) < min_liquidity:
@@ -54,9 +52,7 @@ def check_position_limit(allow_count: int, max_per_event: int) -> tuple[bool, st
     return True, "ok"
 
 
-def check_daily_drawdown(
-    current_dd_fraction: float, max_dd_fraction: float
-) -> tuple[bool, str]:
+def check_daily_drawdown(current_dd_fraction: float, max_dd_fraction: float) -> tuple[bool, str]:
     """Phase 2: current_dd_fraction is hardcoded 0.0 by callers until P&L exists."""
     if current_dd_fraction >= max_dd_fraction:
         return False, "daily_drawdown_reached"

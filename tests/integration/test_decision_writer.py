@@ -41,9 +41,7 @@ async def test_insert_decision_persists_all_fields(pg_pool: asyncpg.Pool):
     assert decision_id == decision.decision_id
 
     async with pg_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT * FROM decisions WHERE decision_id = $1", decision_id
-        )
+        row = await conn.fetchrow("SELECT * FROM decisions WHERE decision_id = $1", decision_id)
 
     assert row is not None
     assert row["market_id"] == "1.A"

@@ -110,8 +110,7 @@ class DecisionEngine:
             selected_runner_snapshot = bundle_by_id.get(selected_runner_id)
 
             allow_count = await conn.fetchval(
-                "SELECT COUNT(*) FROM decisions "
-                "WHERE event_id = $1 AND decision_outcome = 'ALLOW'",
+                "SELECT COUNT(*) FROM decisions WHERE event_id = $1 AND decision_outcome = 'ALLOW'",
                 bundle.event_id,
             )
 
@@ -119,13 +118,9 @@ class DecisionEngine:
                 return GateResult(passed=result[0], reason=result[1])
 
             best_back_size = (
-                selected_runner_snapshot.best_back_size
-                if selected_runner_snapshot
-                else None
+                selected_runner_snapshot.best_back_size if selected_runner_snapshot else None
             )
-            best_spread = (
-                selected_runner_snapshot.spread if selected_runner_snapshot else None
-            )
+            best_spread = selected_runner_snapshot.spread if selected_runner_snapshot else None
 
             gate_results: dict[str, GateResult] = {
                 "kill_switch": _gr(check_kill_switch(kill_switch_active)),
@@ -144,9 +139,7 @@ class DecisionEngine:
                 "position_limit": _gr(
                     check_position_limit(allow_count, self._max_positions_per_event)
                 ),
-                "daily_drawdown": _gr(
-                    check_daily_drawdown(0.0, self._daily_dd_max)
-                ),
+                "daily_drawdown": _gr(check_daily_drawdown(0.0, self._daily_dd_max)),
             }
 
             outcome = self._determine_outcome(gate_results)
@@ -191,19 +184,13 @@ class DecisionEngine:
         return DecisionOutcome.ALLOW
 
     @staticmethod
-    def _build_rationale(
-        gate_results: dict[str, GateResult], outcome: DecisionOutcome
-    ) -> str:
+    def _build_rationale(gate_results: dict[str, GateResult], outcome: DecisionOutcome) -> str:
         if outcome == DecisionOutcome.ALLOW:
             return "all gates passed"
-        failed = [
-            f"{name}:{r.reason}" for name, r in gate_results.items() if not r.passed
-        ]
+        failed = [f"{name}:{r.reason}" for name, r in gate_results.items() if not r.passed]
         return "; ".join(failed)
 
-    async def _load_runners(
-        self, conn: asyncpg.Connection, market_id: str
-    ) -> list[Runner]:
+    async def _load_runners(self, conn: asyncpg.Connection, market_id: str) -> list[Runner]:
         if market_id in self._runner_meta_cache:
             return self._runner_meta_cache[market_id]
         rows = await conn.fetch(

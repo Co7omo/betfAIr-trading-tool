@@ -24,9 +24,7 @@ class ProbabilityProvider(Protocol):
     ) -> dict[int, float]: ...
 
 
-def _runner_quotes(
-    bundle: MarketSnapshotBundle, runners: list[Runner]
-) -> dict[int, float | None]:
+def _runner_quotes(bundle: MarketSnapshotBundle, runners: list[Runner]) -> dict[int, float | None]:
     """Map runner_id → best_back_price (float or None) using the bundle's snapshot."""
     bundle_by_id = {rs.runner_id: rs for rs in bundle.runners}
     out: dict[int, float | None] = {}
@@ -77,9 +75,7 @@ class BiasedStubProvider:
         market_probs = compute_market_probs(_runner_quotes(bundle, runners))
 
         # Identify home runner: smallest non-None sort_priority
-        sorted_runners = sorted(
-            runners, key=lambda r: (r.sort_priority is None, r.sort_priority)
-        )
+        sorted_runners = sorted(runners, key=lambda r: (r.sort_priority is None, r.sort_priority))
         if not sorted_runners:
             return market_probs
         home_id = sorted_runners[0].runner_id
