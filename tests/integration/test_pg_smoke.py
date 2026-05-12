@@ -18,6 +18,8 @@ async def test_schema_tables_exist(pg_pool: asyncpg.Pool):
         "feature_vectors",
         "config_snapshots",
         "decisions",
+        "model_versions",
+        "model_inferences",
     }
     async with pg_pool.acquire() as conn:
         rows = await conn.fetch("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
