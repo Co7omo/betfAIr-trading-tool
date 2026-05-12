@@ -30,6 +30,12 @@ uv run ruff check src/ tests/
 # Format
 uv run ruff format src/ tests/
 
+# Train the baseline model from a results CSV
+uv run python -m betfair_trading.training.train \
+    --csv-path data/results.csv \
+    --model-name logistic_v1 \
+    --output-dir models/
+
 # Run migrations (requires Postgres)
 uv run alembic upgrade head
 
@@ -70,9 +76,9 @@ uv run python -m betfair_trading.main
 
 ## Key Architecture Concepts
 
-**Currently implemented (Phases 1-2):** Market Data Collector, External Data Ingestor, Feature Builder (A0+A1+A2), Scheduler, DB audit layer, Decision Engine + risk gates (with stub probability provider).
+**Currently implemented (Phases 1-2):** Market Data Collector, External Data Ingestor, Feature Builder (A0+A1+A2), Scheduler, DB audit layer, Decision Engine + risk gates, Model Inference baseline (LogReg + Platt calibration on Elo+form features).
 
-**Not yet implemented:** Model Inference (real supervised), Execution Engine, P&L Engine, Kafka messaging.
+**Not yet implemented:** Execution Engine, P&L Engine, Kafka messaging.
 
 **Data flow:** Market polling (10s) + external data (Elo/form) -> Feature Builder -> Model Inference -> Decision Engine (edge check + risk gates) -> Execution Engine -> Betfair API. All steps append to the audit ledger.
 
