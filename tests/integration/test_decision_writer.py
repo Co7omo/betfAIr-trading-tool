@@ -64,3 +64,31 @@ async def test_insert_decision_persists_all_fields(pg_pool: asyncpg.Pool):
         gate_results = json.loads(gate_results)
     assert gate_results["kill_switch"]["passed"] is True
     assert gate_results["kill_switch"]["reason"] == "ok"
+
+
+async def test_insert_decision_with_inference_id(pg_pool: asyncpg.Pool):
+    """The new inference_id column persists round-trip."""
+    fv_id = uuid4()
+    inf_id = uuid4()
+    decision = Decision(
+        market_id="1.A",
+        event_id="E-A",
+        decision_ts=datetime(2026, 5, 11, 12, 0, tzinfo=UTC),
+        model_version="logistic_v1",
+        p_model={101: 0.55, 102: 0.25, 103: 0.20},
+        p_market={101: 0.50, 102: 0.30, 103: 0.20},
+        edge_gross={101: 0.05, 102: -0.05, 103: 0.0},
+        edge_net={101: 0.0225, 102: -0.0625, 103: -0.01},
+        gate_results={"kill_switch": GateResult(passed=True, reason="ok")},
+        decision_outcome=DecisionOutcome.ALLOW,
+        feature_vector_ids=[fv_id],
+        inference_id=inf_id,
+    )
+    async with pg_pool.acquire() as conn:
+        decision_id = await insert_decision(conn, decision)
+
+    async with pg_pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT inference_id FROM decisions WHERE decision_id = $1", decision_id
+        )
+    assert row["inference_id"] == inf_id
