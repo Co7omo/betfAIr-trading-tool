@@ -52,6 +52,7 @@ def test_gate_result_minimal():
 
 def test_decision_with_inference_id():
     from uuid import uuid4
+
     inf_id = uuid4()
     fv_id = uuid4()
     d = Decision(

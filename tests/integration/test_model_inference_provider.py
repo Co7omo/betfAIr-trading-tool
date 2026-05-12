@@ -73,9 +73,7 @@ async def test_initialize_loads_latest_model(
     assert provider.model_version == "test_v1"
 
 
-async def test_initialize_no_model_falls_back(
-    pg_pool: asyncpg.Pool, tmp_path: Path
-):
+async def test_initialize_no_model_falls_back(pg_pool: asyncpg.Pool, tmp_path: Path):
     provider = ModelInferenceProvider(pool=pg_pool, models_dir=tmp_path)
     await provider.initialize()
 
@@ -107,9 +105,15 @@ async def test_get_probabilities_persists_inference(
     ingestor._loaded = True
 
     fake = FakeAsyncBetfairClient()
-    fake.add_market(make_market(market_id="1.A", event_id="E-A",
-                                home="Liverpool", away="Arsenal",
-                                start_time=datetime.now(UTC) + timedelta(minutes=60)))
+    fake.add_market(
+        make_market(
+            market_id="1.A",
+            event_id="E-A",
+            home="Liverpool",
+            away="Arsenal",
+            start_time=datetime.now(UTC) + timedelta(minutes=60),
+        )
+    )
     fake.queue_book("1.A", make_book(market_id="1.A", event_id="E-A"))
 
     collector = MarketCollector(fake, pg_pool, window_start_minutes=120, window_end_minutes=10)
@@ -117,16 +121,19 @@ async def test_get_probabilities_persists_inference(
     await collector.run_discovery()
 
     captured: dict = {}
+
     async def on_snap(bundle, snapshot_ids):
         fv_ids = await fb.on_market_snapshot(bundle, snapshot_ids)
         captured["bundle"] = bundle
         captured["fv_ids"] = fv_ids
+
     await collector.run_poll_cycle(on_snapshot=on_snap)
 
     provider = ModelInferenceProvider(pool=pg_pool, models_dir=tmp_path)
     await provider.initialize()
 
     from betfair_trading.models.market import Runner
+
     runners = [
         Runner(runner_id=101, runner_name="Liverpool", sort_priority=1),
         Runner(runner_id=102, runner_name="The Draw", sort_priority=2),
@@ -168,16 +175,19 @@ async def test_get_probabilities_falls_back_when_no_a2(
     await collector.run_discovery()
 
     captured: dict = {}
+
     async def on_snap(bundle, snapshot_ids):
         fv_ids = await fb.on_market_snapshot(bundle, snapshot_ids)
         captured["bundle"] = bundle
         captured["fv_ids"] = fv_ids
+
     await collector.run_poll_cycle(on_snapshot=on_snap)
 
     provider = ModelInferenceProvider(pool=pg_pool, models_dir=tmp_path)
     await provider.initialize()
 
     from betfair_trading.models.market import Runner
+
     runners = [
         Runner(runner_id=101, runner_name="A", sort_priority=1),
         Runner(runner_id=102, runner_name="Draw", sort_priority=2),
@@ -214,16 +224,17 @@ async def test_decision_links_inference_id(
     ingestor._loaded = True
 
     fake = FakeAsyncBetfairClient()
-    fake.add_market(make_market(market_id="1.A", event_id="E-A",
-                                home="Liverpool", away="Arsenal"))
+    fake.add_market(make_market(market_id="1.A", event_id="E-A", home="Liverpool", away="Arsenal"))
     fake.queue_book("1.A", make_book(market_id="1.A", event_id="E-A"))
 
     provider = ModelInferenceProvider(pool=pg_pool, models_dir=tmp_path)
     await provider.initialize()
     engine = DecisionEngine(
-        pool=pg_pool, provider=provider,
+        pool=pg_pool,
+        provider=provider,
         edge_threshold=-1.0,
-        min_liquidity=0.0, max_spread=999.0,
+        min_liquidity=0.0,
+        max_spread=999.0,
         max_positions_per_event=999,
     )
     fb = FeatureBuilder(pg_pool, external_ingestor=ingestor)
@@ -254,6 +265,7 @@ async def test_decision_links_inference_id(
 # Local helper
 # ---------------------------------------------------------------------------
 
+
 def _make_bundle_and_runners_for_test():
     from decimal import Decimal
 
@@ -264,17 +276,32 @@ def _make_bundle_and_runners_for_test():
     )
 
     bundle = MarketSnapshotBundle(
-        market_id="1.A", event_id="E-A",
+        market_id="1.A",
+        event_id="E-A",
         snapshot_ts=datetime(2026, 5, 11, 12, 0, tzinfo=UTC),
         runners=[
-            RunnerSnapshot(runner_id=101, best_back_price=Decimal("2.0"),
-                           best_lay_price=Decimal("2.04"), traded_volume=Decimal("0")),
-            RunnerSnapshot(runner_id=102, best_back_price=Decimal("3.5"),
-                           best_lay_price=Decimal("3.6"), traded_volume=Decimal("0")),
-            RunnerSnapshot(runner_id=103, best_back_price=Decimal("4.0"),
-                           best_lay_price=Decimal("4.1"), traded_volume=Decimal("0")),
+            RunnerSnapshot(
+                runner_id=101,
+                best_back_price=Decimal("2.0"),
+                best_lay_price=Decimal("2.04"),
+                traded_volume=Decimal("0"),
+            ),
+            RunnerSnapshot(
+                runner_id=102,
+                best_back_price=Decimal("3.5"),
+                best_lay_price=Decimal("3.6"),
+                traded_volume=Decimal("0"),
+            ),
+            RunnerSnapshot(
+                runner_id=103,
+                best_back_price=Decimal("4.0"),
+                best_lay_price=Decimal("4.1"),
+                traded_volume=Decimal("0"),
+            ),
         ],
-        market_status="OPEN", inplay=False, total_matched=Decimal("1000"),
+        market_status="OPEN",
+        inplay=False,
+        total_matched=Decimal("1000"),
         minutes_to_start=60.0,
     )
     runners = [

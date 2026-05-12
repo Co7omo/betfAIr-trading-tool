@@ -29,9 +29,7 @@ async def test_insert_model_version_persists(pg_pool: asyncpg.Pool):
     assert mv_id == mv.model_version_id
 
     async with pg_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT * FROM model_versions WHERE model_version_id = $1", mv_id
-        )
+        row = await conn.fetchrow("SELECT * FROM model_versions WHERE model_version_id = $1", mv_id)
     assert row["model_name"] == "logistic_v1"
     assert row["feature_set_version"] == "A2_EXT_ONLY"
     assert row["n_train"] == 80
@@ -64,9 +62,7 @@ async def test_insert_model_inference_persists(pg_pool: asyncpg.Pool):
     assert inf_id == mi.inference_id
 
     async with pg_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT * FROM model_inferences WHERE inference_id = $1", inf_id
-        )
+        row = await conn.fetchrow("SELECT * FROM model_inferences WHERE inference_id = $1", inf_id)
     assert row["market_id"] == "1.A"
     assert row["p_home"] == Decimal("0.550000")
     assert list(row["feature_vector_ids"]) == [fv_id]

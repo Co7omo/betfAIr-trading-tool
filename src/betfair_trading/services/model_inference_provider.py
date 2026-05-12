@@ -103,9 +103,7 @@ class ModelInferenceProvider:
         feature_vector_ids: list[uuid.UUID],
     ) -> tuple[dict[int, float], uuid.UUID | None]:
         if self._model is None:
-            probs, _ = await self._fallback.get_probabilities(
-                bundle, runners, feature_vector_ids
-            )
+            probs, _ = await self._fallback.get_probabilities(bundle, runners, feature_vector_ids)
             return probs, None
 
         async with self._pool.acquire() as conn:
@@ -135,9 +133,7 @@ class ModelInferenceProvider:
 
             proba = self._model.predict_proba(X)[0]  # [p_home, p_draw, p_away]
 
-            sorted_r = sorted(
-                runners, key=lambda r: (r.sort_priority is None, r.sort_priority)
-            )
+            sorted_r = sorted(runners, key=lambda r: (r.sort_priority is None, r.sort_priority))
             result_probs = {
                 sorted_r[0].runner_id: float(proba[0]),
                 sorted_r[1].runner_id: float(proba[1]),

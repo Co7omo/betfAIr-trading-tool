@@ -70,15 +70,9 @@ async def main(
     metrics = {
         "log_loss": float(log_loss(y_test, proba_test)),
         "accuracy": float(accuracy_score(y_test, pred_test)),
-        "brier_home": float(
-            brier_score_loss((y_test == 0).astype(int), proba_test[:, 0])
-        ),
-        "brier_draw": float(
-            brier_score_loss((y_test == 1).astype(int), proba_test[:, 1])
-        ),
-        "brier_away": float(
-            brier_score_loss((y_test == 2).astype(int), proba_test[:, 2])
-        ),
+        "brier_home": float(brier_score_loss((y_test == 0).astype(int), proba_test[:, 0])),
+        "brier_draw": float(brier_score_loss((y_test == 1).astype(int), proba_test[:, 1])),
+        "brier_away": float(brier_score_loss((y_test == 2).astype(int), proba_test[:, 2])),
         "confusion_matrix": confusion_matrix(y_test, pred_test).tolist(),
     }
 

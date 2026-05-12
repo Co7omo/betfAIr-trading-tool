@@ -17,7 +17,6 @@ from betfair_trading.training.features import (
     build_feature_dict,
 )
 
-
 _RESULT_TO_INT: dict[str, int] = {"H": 0, "D": 1, "A": 2}
 _DATE_FORMATS = ("%d/%m/%Y", "%d/%m/%y", "%Y-%m-%d", "%d-%m-%Y")
 
@@ -36,9 +35,7 @@ class DatasetBuilder:
         self.elo = EloEngine(k_factor=k_factor, initial_rating=initial_rating)
         self.form = FormCalculator()
 
-    def build(
-        self, csv_path: Path
-    ) -> tuple[np.ndarray, np.ndarray, list[datetime]]:
+    def build(self, csv_path: Path) -> tuple[np.ndarray, np.ndarray, list[datetime]]:
         """Iterate the CSV chronologically. For each match:
         1. Read features as-of pre-kickoff.
         2. Append to dataset.

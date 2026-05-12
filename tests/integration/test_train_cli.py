@@ -57,14 +57,13 @@ async def test_train_end_to_end(
 
     # model_versions row inserted
     async with pg_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT * FROM model_versions WHERE model_name = 'test_v1'"
-        )
+        row = await conn.fetchrow("SELECT * FROM model_versions WHERE model_name = 'test_v1'")
     assert row is not None
     assert row["feature_set_version"] == "A2_EXT_ONLY"
     assert row["file_path"].endswith(artifact_path.name)
     # CSV hash matches
     import hashlib
+
     expected_hash = hashlib.sha256(synthetic_csv.read_bytes()).hexdigest()
     assert row["training_data_hash"] == expected_hash
 

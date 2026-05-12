@@ -6,9 +6,9 @@ from decimal import Decimal
 import asyncpg
 
 from betfair_trading.models.decision import Decision
-from betfair_trading.models.inference import ModelInference, ModelVersion
 from betfair_trading.models.external import ExternalFeatureBundle
 from betfair_trading.models.features import FeatureVector
+from betfair_trading.models.inference import ModelInference, ModelVersion
 from betfair_trading.models.market import MarketCatalogue, MarketSnapshotBundle
 
 
@@ -174,9 +174,7 @@ async def insert_decision(conn: asyncpg.Connection, decision: Decision) -> uuid.
     )
 
 
-async def insert_model_version(
-    conn: asyncpg.Connection, mv: ModelVersion
-) -> uuid.UUID:
+async def insert_model_version(conn: asyncpg.Connection, mv: ModelVersion) -> uuid.UUID:
     return await conn.fetchval(
         """INSERT INTO model_versions
            (model_version_id, model_name, feature_set_version,
@@ -198,9 +196,7 @@ async def insert_model_version(
     )
 
 
-async def insert_model_inference(
-    conn: asyncpg.Connection, mi: ModelInference
-) -> uuid.UUID:
+async def insert_model_inference(conn: asyncpg.Connection, mi: ModelInference) -> uuid.UUID:
     return await conn.fetchval(
         """INSERT INTO model_inferences
            (inference_id, model_version_id, market_id, event_id, asof_ts,
