@@ -21,7 +21,7 @@ class ProbabilityProvider(Protocol):
         bundle: MarketSnapshotBundle,
         runners: list[Runner],
         feature_vector_ids: list[uuid.UUID],
-    ) -> dict[int, float]: ...
+    ) -> tuple[dict[int, float], uuid.UUID | None]: ...
 
 
 def _runner_quotes(bundle: MarketSnapshotBundle, runners: list[Runner]) -> dict[int, float | None]:
@@ -50,8 +50,8 @@ class MarketImpliedProvider:
         bundle: MarketSnapshotBundle,
         runners: list[Runner],
         feature_vector_ids: list[uuid.UUID],
-    ) -> dict[int, float]:
-        return compute_market_probs(_runner_quotes(bundle, runners))
+    ) -> tuple[dict[int, float], uuid.UUID | None]:
+        return compute_market_probs(_runner_quotes(bundle, runners)), None
 
 
 class BiasedStubProvider:
@@ -71,13 +71,15 @@ class BiasedStubProvider:
         bundle: MarketSnapshotBundle,
         runners: list[Runner],
         feature_vector_ids: list[uuid.UUID],
-    ) -> dict[int, float]:
+    ) -> tuple[dict[int, float], uuid.UUID | None]:
         market_probs = compute_market_probs(_runner_quotes(bundle, runners))
 
         # Identify home runner: smallest non-None sort_priority
-        sorted_runners = sorted(runners, key=lambda r: (r.sort_priority is None, r.sort_priority))
+        sorted_runners = sorted(
+            runners, key=lambda r: (r.sort_priority is None, r.sort_priority)
+        )
         if not sorted_runners:
-            return market_probs
+            return market_probs, None
         home_id = sorted_runners[0].runner_id
 
         n_others = max(1, len(market_probs) - 1)
@@ -90,5 +92,5 @@ class BiasedStubProvider:
 
         total = sum(biased.values())
         if total <= 0:
-            return market_probs
-        return {rid: p / total for rid, p in biased.items()}
+            return market_probs, None
+        return {rid: p / total for rid, p in biased.items()}, None

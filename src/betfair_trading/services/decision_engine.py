@@ -90,7 +90,7 @@ class DecisionEngine:
             }
             p_market = compute_market_probs(runner_quotes)
 
-            p_model = await self._provider.get_probabilities(
+            p_model, inference_id = await self._provider.get_probabilities(
                 bundle, runners_meta, feature_vector_ids
             )
 
@@ -163,6 +163,7 @@ class DecisionEngine:
                 rationale=rationale,
                 feature_vector_ids=feature_vector_ids,
                 config_snapshot_id=config_snapshot_id,
+                inference_id=inference_id,
             )
             decision_id = await insert_decision(conn, decision)
 
