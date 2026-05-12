@@ -10,3 +10,6 @@ data/
 .ruff_cache/
 .pytest_cache/
 .mypy_cache/
+
+# Trained model artifacts (kept on disk, registered in model_versions table)
+models/*.joblib
