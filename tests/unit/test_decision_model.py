@@ -48,3 +48,42 @@ def test_gate_result_minimal():
     g = GateResult(passed=False, reason="size_below_min")
     assert g.passed is False
     assert g.reason == "size_below_min"
+
+
+def test_decision_with_inference_id():
+    from uuid import uuid4
+    inf_id = uuid4()
+    fv_id = uuid4()
+    d = Decision(
+        market_id="1.A",
+        event_id="E-A",
+        decision_ts=datetime(2026, 5, 11, tzinfo=UTC),
+        model_version="logistic_v1",
+        p_model={101: 0.55, 102: 0.25, 103: 0.20},
+        p_market={101: 0.50, 102: 0.30, 103: 0.20},
+        edge_gross={101: 0.05, 102: -0.05, 103: 0.0},
+        edge_net={101: 0.0225, 102: -0.0625, 103: -0.01},
+        gate_results={"kill_switch": GateResult(passed=True, reason="ok")},
+        decision_outcome=DecisionOutcome.ALLOW,
+        feature_vector_ids=[fv_id],
+        inference_id=inf_id,
+    )
+    assert d.inference_id == inf_id
+
+
+def test_decision_inference_id_optional():
+    fv_id = uuid4()
+    d = Decision(
+        market_id="1.A",
+        event_id="E-A",
+        decision_ts=datetime(2026, 5, 11, tzinfo=UTC),
+        model_version="logistic_v1",
+        p_model={101: 0.55, 102: 0.25, 103: 0.20},
+        p_market={101: 0.50, 102: 0.30, 103: 0.20},
+        edge_gross={101: 0.05, 102: -0.05, 103: 0.0},
+        edge_net={101: 0.0225, 102: -0.0625, 103: -0.01},
+        gate_results={"kill_switch": GateResult(passed=True, reason="ok")},
+        decision_outcome=DecisionOutcome.ALLOW,
+        feature_vector_ids=[fv_id],
+    )
+    assert d.inference_id is None
