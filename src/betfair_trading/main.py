@@ -21,7 +21,7 @@ from betfair_trading.services.decision_engine import DecisionEngine
 from betfair_trading.services.external_ingestor import ExternalDataIngestor
 from betfair_trading.services.feature_builder import FeatureBuilder
 from betfair_trading.services.market_collector import MarketCollector
-from betfair_trading.services.probability_providers import BiasedStubProvider
+from betfair_trading.services.model_inference_provider import ModelInferenceProvider
 from betfair_trading.services.scheduler import Scheduler
 from betfair_trading.settings import Settings
 
@@ -72,8 +72,9 @@ async def main() -> None:
     # Initialize feature builder
     feature_builder = FeatureBuilder(pool, ingestor)
 
-    # Initialize decision engine (Phase 2: stub provider)
-    provider = BiasedStubProvider(home_bias=0.05)
+    # Initialize decision engine (Phase 3: real model inference provider)
+    provider = ModelInferenceProvider(pool=pool, models_dir="models/")
+    await provider.initialize()
     decision_engine = DecisionEngine(
         pool=pool,
         provider=provider,
