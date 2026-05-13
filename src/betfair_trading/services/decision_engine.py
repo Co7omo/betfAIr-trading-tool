@@ -61,7 +61,7 @@ class DecisionEngine:
         bundle: MarketSnapshotBundle,
         snapshot_ids: list[uuid.UUID],
         feature_vector_ids: list[uuid.UUID],
-    ) -> uuid.UUID | None:
+    ) -> Decision | None:
         async with self._pool.acquire() as conn:
             runners_meta = await self._load_runners(conn, bundle.market_id)
             if not runners_meta:
@@ -165,7 +165,7 @@ class DecisionEngine:
                 config_snapshot_id=config_snapshot_id,
                 inference_id=inference_id,
             )
-            decision_id = await insert_decision(conn, decision)
+            await insert_decision(conn, decision)
 
         log.info(
             "decision_made",
@@ -174,7 +174,7 @@ class DecisionEngine:
             selected_runner=selected_runner_id,
             edge_net=selected_edge_net,
         )
-        return decision_id
+        return decision
 
     @staticmethod
     def _determine_outcome(gate_results: dict[str, GateResult]) -> DecisionOutcome:

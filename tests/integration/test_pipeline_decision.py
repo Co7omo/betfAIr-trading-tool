@@ -45,8 +45,8 @@ async def _run_pipeline(pg_pool, fake, decision_engine, fb=None):
     async def on_snap(bundle, snapshot_ids):
         fv_ids = await fb.on_market_snapshot(bundle, snapshot_ids)
         if fv_ids:
-            did = await decision_engine.evaluate(bundle, snapshot_ids, fv_ids)
-            decisions_made.append(did)
+            dec = await decision_engine.evaluate(bundle, snapshot_ids, fv_ids)
+            decisions_made.append(dec)
 
     await collector.run_discovery()
     await collector.run_poll_cycle(on_snapshot=on_snap)
