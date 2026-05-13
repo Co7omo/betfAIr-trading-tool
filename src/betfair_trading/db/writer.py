@@ -8,6 +8,7 @@ import asyncpg
 from betfair_trading.models.decision import Decision
 from betfair_trading.models.external import ExternalFeatureBundle
 from betfair_trading.models.features import FeatureVector
+from betfair_trading.models.inference import ModelInference, ModelVersion
 from betfair_trading.models.market import MarketCatalogue, MarketSnapshotBundle
 
 
@@ -147,8 +148,8 @@ async def insert_decision(conn: asyncpg.Connection, decision: Decision) -> uuid.
             model_version, p_model, p_market, edge_gross, edge_net,
             selected_runner_id, selected_edge_net,
             gate_results, decision_outcome, rationale,
-            feature_vector_ids, config_snapshot_id)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+            feature_vector_ids, config_snapshot_id, inference_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
            RETURNING decision_id""",
         decision.decision_id,
         decision.market_id,
@@ -169,4 +170,47 @@ async def insert_decision(conn: asyncpg.Connection, decision: Decision) -> uuid.
         decision.rationale,
         decision.feature_vector_ids,
         decision.config_snapshot_id,
+        decision.inference_id,
+    )
+
+
+async def insert_model_version(conn: asyncpg.Connection, mv: ModelVersion) -> uuid.UUID:
+    return await conn.fetchval(
+        """INSERT INTO model_versions
+           (model_version_id, model_name, feature_set_version,
+            file_path, training_data_hash, training_csv_path,
+            training_params, metrics, feature_names, n_train, n_test)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+           RETURNING model_version_id""",
+        mv.model_version_id,
+        mv.model_name,
+        mv.feature_set_version,
+        mv.file_path,
+        mv.training_data_hash,
+        mv.training_csv_path,
+        json.dumps(mv.training_params, default=str),
+        json.dumps(mv.metrics, default=str),
+        json.dumps(mv.feature_names),
+        mv.n_train,
+        mv.n_test,
+    )
+
+
+async def insert_model_inference(conn: asyncpg.Connection, mi: ModelInference) -> uuid.UUID:
+    return await conn.fetchval(
+        """INSERT INTO model_inferences
+           (inference_id, model_version_id, market_id, event_id, asof_ts,
+            p_home, p_draw, p_away, feature_vector_ids, features_used)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+           RETURNING inference_id""",
+        mi.inference_id,
+        mi.model_version_id,
+        mi.market_id,
+        mi.event_id,
+        mi.asof_ts,
+        mi.p_home,
+        mi.p_draw,
+        mi.p_away,
+        mi.feature_vector_ids,
+        json.dumps(mi.features_used, default=str),
     )

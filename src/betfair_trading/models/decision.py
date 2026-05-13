@@ -41,3 +41,4 @@ class Decision(BaseModel):
 
     feature_vector_ids: list[UUID]
     config_snapshot_id: UUID | None = None
+    inference_id: UUID | None = None  # NEW

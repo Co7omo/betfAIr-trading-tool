@@ -59,8 +59,9 @@ def _make_bundle_and_runners():
 async def test_market_implied_provider_returns_normalized_probs():
     bundle, runners = _make_bundle_and_runners()
     provider = MarketImpliedProvider()
-    probs = await provider.get_probabilities(bundle, runners, feature_vector_ids=[])
+    probs, inference_id = await provider.get_probabilities(bundle, runners, feature_vector_ids=[])
 
+    assert inference_id is None
     total = sum(probs.values())
     assert math.isclose(total, 1.0, abs_tol=1e-9)
     # Home (odds 2.0) should have largest implied prob
@@ -78,11 +79,12 @@ async def test_market_implied_provider_version():
 async def test_biased_stub_provider_shifts_home():
     bundle, runners = _make_bundle_and_runners()
     market_provider = MarketImpliedProvider()
-    market_probs = await market_provider.get_probabilities(bundle, runners, [])
+    market_probs, _ = await market_provider.get_probabilities(bundle, runners, [])
 
     biased_provider = BiasedStubProvider(home_bias=0.05)
-    biased_probs = await biased_provider.get_probabilities(bundle, runners, [])
+    biased_probs, inference_id = await biased_provider.get_probabilities(bundle, runners, [])
 
+    assert inference_id is None
     # Home should get more weight after bias
     assert biased_probs[101] > market_probs[101]
     # Sum still equals 1.0
