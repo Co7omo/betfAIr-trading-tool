@@ -55,7 +55,8 @@ class ExecutionEngine:
                 "SELECT best_back_price FROM market_snapshots "
                 "WHERE market_id = $1 AND runner_id = $2 "
                 "ORDER BY snapshot_ts DESC LIMIT 1",
-                decision.market_id, decision.selected_runner_id,
+                decision.market_id,
+                decision.selected_runner_id,
             )
             if quote_row is None or quote_row["best_back_price"] is None:
                 log.warning(
@@ -70,7 +71,8 @@ class ExecutionEngine:
 
             stake = compute_stake(
                 bankroll=self._bankroll,
-                p_model=p_model, odds=odds,
+                p_model=p_model,
+                odds=odds,
                 kelly_multiplier=self._kelly_multiplier,
                 max_stake_fraction=self._max_stake_fraction,
                 min_stake=self._min_stake,
@@ -78,7 +80,9 @@ class ExecutionEngine:
             if stake is None:
                 log.info(
                     "execution_skip_below_min_stake",
-                    market_id=decision.market_id, p_model=p_model, odds=odds,
+                    market_id=decision.market_id,
+                    p_model=p_model,
+                    odds=odds,
                 )
                 return None
 

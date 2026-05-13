@@ -17,9 +17,14 @@ from betfair_trading.services.reconciler import Reconciler
 from tests.integration.fakes.fake_betfair_client import FakeAsyncBetfairClient
 
 
-def _make_event(decision_id=None, status=OrderStatus.EXECUTABLE,
-                event_type=OrderEventType.PLACED, matched=Decimal("0"),
-                mode=ExecutionMode.PAPER, requested_size=Decimal("20.00")):
+def _make_event(
+    decision_id=None,
+    status=OrderStatus.EXECUTABLE,
+    event_type=OrderEventType.PLACED,
+    matched=Decimal("0"),
+    mode=ExecutionMode.PAPER,
+    requested_size=Decimal("20.00"),
+):
     dec_id = decision_id or uuid4()
     return OrderEvent(
         customer_order_ref=dec_id.hex,
@@ -72,9 +77,7 @@ async def test_reconcile_instant_match_writes_fill_and_lifecycle(pg_pool: asyncp
 
     async with pg_pool.acquire() as conn:
         fills = await conn.fetch("SELECT * FROM fills")
-        lifecycle_events = await conn.fetch(
-            "SELECT * FROM orders WHERE event_type = 'LIFECYCLE'"
-        )
+        lifecycle_events = await conn.fetch("SELECT * FROM orders WHERE event_type = 'LIFECYCLE'")
 
     assert len(fills) == 1
     assert fills[0]["matched_size_delta"] == Decimal("20.00")
@@ -91,10 +94,16 @@ async def test_reconcile_partial_match_writes_delta(pg_pool: asyncpg.Pool):
 
     event = _make_event(requested_size=Decimal("20.00"))
     fake._placed_orders[event.customer_order_ref] = {
-        "market_id": event.market_id, "selection_id": event.selection_id,
-        "side": "BACK", "price": 2.0, "size": 20.0, "persistence_type": "LAPSE",
-        "size_matched": 0.0, "size_remaining": 20.0,
-        "average_price_matched": 0.0, "order_status": "EXECUTABLE",
+        "market_id": event.market_id,
+        "selection_id": event.selection_id,
+        "side": "BACK",
+        "price": 2.0,
+        "size": 20.0,
+        "persistence_type": "LAPSE",
+        "size_matched": 0.0,
+        "size_remaining": 20.0,
+        "average_price_matched": 0.0,
+        "order_status": "EXECUTABLE",
         "bet_id": "FAKE-TEST",
     }
     fake.queue_match_behavior(event.customer_order_ref, "partial")
@@ -107,8 +116,7 @@ async def test_reconcile_partial_match_writes_delta(pg_pool: asyncpg.Pool):
     async with pg_pool.acquire() as conn:
         fill = await conn.fetchrow("SELECT * FROM fills")
         latest = await conn.fetchrow(
-            "SELECT status, matched_size FROM orders "
-            "ORDER BY event_ts DESC LIMIT 1"
+            "SELECT status, matched_size FROM orders ORDER BY event_ts DESC LIMIT 1"
         )
 
     assert fill["matched_size_delta"] == Decimal("10.00")
@@ -123,10 +131,16 @@ async def test_reconcile_no_change_writes_nothing(pg_pool: asyncpg.Pool):
 
     event = _make_event()
     fake._placed_orders[event.customer_order_ref] = {
-        "market_id": event.market_id, "selection_id": event.selection_id,
-        "side": "BACK", "price": 2.0, "size": 20.0, "persistence_type": "LAPSE",
-        "size_matched": 0.0, "size_remaining": 20.0,
-        "average_price_matched": 0.0, "order_status": "EXECUTABLE",
+        "market_id": event.market_id,
+        "selection_id": event.selection_id,
+        "side": "BACK",
+        "price": 2.0,
+        "size": 20.0,
+        "persistence_type": "LAPSE",
+        "size_matched": 0.0,
+        "size_remaining": 20.0,
+        "average_price_matched": 0.0,
+        "order_status": "EXECUTABLE",
         "bet_id": "FAKE-TEST",
     }
     fake.queue_match_behavior(event.customer_order_ref, "no_match")

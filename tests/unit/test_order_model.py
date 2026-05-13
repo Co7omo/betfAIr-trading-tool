@@ -1,6 +1,5 @@
 """Unit tests for Order Pydantic contracts."""
 
-from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import uuid4
 

@@ -19,22 +19,34 @@ from tests.integration.fakes.fixtures import make_book, make_market
 async def _build_pipeline(pg_pool, mode: ExecutionMode):
     """Construct collector, feature_builder, decision_engine, execution_engine, reconciler."""
     fake = FakeAsyncBetfairClient()
-    fake.add_market(make_market(market_id="1.A", event_id="E-A",
-                                home="Liverpool", away="Arsenal",
-                                start_time=datetime.now(UTC) + timedelta(minutes=60)))
+    fake.add_market(
+        make_market(
+            market_id="1.A",
+            event_id="E-A",
+            home="Liverpool",
+            away="Arsenal",
+            start_time=datetime.now(UTC) + timedelta(minutes=60),
+        )
+    )
     fake.queue_book("1.A", make_book(market_id="1.A", event_id="E-A"))
 
     collector = MarketCollector(fake, pg_pool, window_start_minutes=120, window_end_minutes=10)
     fb = FeatureBuilder(pg_pool, external_ingestor=None)
     provider = BiasedStubProvider(home_bias=0.05)
     de = DecisionEngine(
-        pool=pg_pool, provider=provider,
-        edge_threshold=0.02, min_liquidity=100.0, max_spread=0.10,
+        pool=pg_pool,
+        provider=provider,
+        edge_threshold=0.02,
+        min_liquidity=100.0,
+        max_spread=0.10,
         max_positions_per_event=1,
     )
     ee = ExecutionEngine(
-        pool=pg_pool, bf_client=fake, mode=mode,
-        bankroll=1000.0, min_stake=2.0,
+        pool=pg_pool,
+        bf_client=fake,
+        mode=mode,
+        bankroll=1000.0,
+        min_stake=2.0,
     )
     rec = Reconciler(pool=pg_pool, bf_client=fake, mode=mode)
     return fake, collector, fb, de, ee, rec

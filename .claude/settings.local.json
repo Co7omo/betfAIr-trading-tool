@@ -9,7 +9,10 @@
       "Bash(do touch:*)",
       "Bash(done)",
       "Bash(uv sync:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git *)"
     ]
   }
 }

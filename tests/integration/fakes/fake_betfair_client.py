@@ -102,9 +102,7 @@ class FakeAsyncBetfairClient:
             "customer_order_ref": customer_order_ref,
         }
 
-    async def list_current_orders(
-        self, customer_order_refs: list[str]
-    ) -> list[dict]:
+    async def list_current_orders(self, customer_order_refs: list[str]) -> list[dict]:
         """Return synthetic state for placed orders, applying configured behavior."""
         out = []
         for ref in customer_order_refs:
@@ -129,12 +127,14 @@ class FakeAsyncBetfairClient:
                 record["order_status"] = "LAPSED"
             # 'no_match' leaves state unchanged
 
-            out.append({
-                "customer_order_ref": ref,
-                "order_status": record["order_status"],
-                "size_matched": record["size_matched"],
-                "size_remaining": record["size_remaining"],
-                "average_price_matched": record["average_price_matched"],
-                "bet_id": record["bet_id"],
-            })
+            out.append(
+                {
+                    "customer_order_ref": ref,
+                    "order_status": record["order_status"],
+                    "size_matched": record["size_matched"],
+                    "size_remaining": record["size_remaining"],
+                    "average_price_matched": record["average_price_matched"],
+                    "bet_id": record["bet_id"],
+                }
+            )
         return out

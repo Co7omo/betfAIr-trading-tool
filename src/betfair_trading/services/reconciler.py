@@ -62,34 +62,40 @@ class Reconciler:
 
                 if matched_delta > 0:
                     remaining = Decimal(str(cur.get("size_remaining", 0)))
-                    await insert_fill(conn, Fill(
-                        customer_order_ref=prev.customer_order_ref,
-                        decision_id=prev.decision_id,
-                        market_id=prev.market_id,
-                        selection_id=prev.selection_id,
-                        matched_size_delta=matched_delta,
-                        average_price_matched=avg_decimal or Decimal("0"),
-                        cumulative_matched_size=new_matched,
-                        remaining_size=remaining,
-                    ))
+                    await insert_fill(
+                        conn,
+                        Fill(
+                            customer_order_ref=prev.customer_order_ref,
+                            decision_id=prev.decision_id,
+                            market_id=prev.market_id,
+                            selection_id=prev.selection_id,
+                            matched_size_delta=matched_delta,
+                            average_price_matched=avg_decimal or Decimal("0"),
+                            cumulative_matched_size=new_matched,
+                            remaining_size=remaining,
+                        ),
+                    )
 
                 if matched_delta > 0 or new_status != prev.status:
-                    await insert_order_event(conn, OrderEvent(
-                        customer_order_ref=prev.customer_order_ref,
-                        decision_id=prev.decision_id,
-                        market_id=prev.market_id,
-                        event_id=prev.event_id,
-                        selection_id=prev.selection_id,
-                        side=prev.side,
-                        requested_price=prev.requested_price,
-                        requested_size=prev.requested_size,
-                        matched_size=new_matched,
-                        average_price_matched=avg_decimal,
-                        status=new_status,
-                        event_type=OrderEventType.LIFECYCLE,
-                        api_response=cur,
-                        mode=prev.mode,
-                    ))
+                    await insert_order_event(
+                        conn,
+                        OrderEvent(
+                            customer_order_ref=prev.customer_order_ref,
+                            decision_id=prev.decision_id,
+                            market_id=prev.market_id,
+                            event_id=prev.event_id,
+                            selection_id=prev.selection_id,
+                            side=prev.side,
+                            requested_price=prev.requested_price,
+                            requested_size=prev.requested_size,
+                            matched_size=new_matched,
+                            average_price_matched=avg_decimal,
+                            status=new_status,
+                            event_type=OrderEventType.LIFECYCLE,
+                            api_response=cur,
+                            mode=prev.mode,
+                        ),
+                    )
 
         log.debug(
             "reconcile_complete",

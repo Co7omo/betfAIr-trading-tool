@@ -46,9 +46,7 @@ class Scheduler:
             asyncio.create_task(self._keepalive_loop(), name="keepalive"),
         ]
         if self._reconciler is not None:
-            tasks.append(
-                asyncio.create_task(self._reconcile_loop(), name="reconcile")
-            )
+            tasks.append(asyncio.create_task(self._reconcile_loop(), name="reconcile"))
 
         try:
             await asyncio.gather(*tasks)

@@ -1,6 +1,5 @@
 """Integration tests for order/fill writers."""
 
-import json
 from decimal import Decimal
 from uuid import uuid4
 
@@ -22,8 +21,11 @@ from betfair_trading.models.order import (
 
 
 def _make_order_event(
-    decision_id=None, status=OrderStatus.EXECUTABLE, mode=ExecutionMode.PAPER,
-    event_type=OrderEventType.PLACED, matched_size=Decimal("0"),
+    decision_id=None,
+    status=OrderStatus.EXECUTABLE,
+    mode=ExecutionMode.PAPER,
+    event_type=OrderEventType.PLACED,
+    matched_size=Decimal("0"),
 ):
     dec_id = decision_id or uuid4()
     return OrderEvent(
@@ -49,9 +51,7 @@ async def test_insert_order_event_persists(pg_pool: asyncpg.Pool):
     assert order_event_id == event.order_event_id
 
     async with pg_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT * FROM orders WHERE order_event_id = $1", order_event_id
-        )
+        row = await conn.fetchrow("SELECT * FROM orders WHERE order_event_id = $1", order_event_id)
     assert row["customer_order_ref"] == event.customer_order_ref
     assert row["status"] == "EXECUTABLE"
     assert row["mode"] == "paper"
@@ -75,9 +75,7 @@ async def test_insert_fill_persists(pg_pool: asyncpg.Pool):
     assert fill_id == fill.fill_id
 
     async with pg_pool.acquire() as conn:
-        row = await conn.fetchrow(
-            "SELECT * FROM fills WHERE fill_id = $1", fill_id
-        )
+        row = await conn.fetchrow("SELECT * FROM fills WHERE fill_id = $1", fill_id)
     assert row["matched_size_delta"] == Decimal("10.00")
     assert row["average_price_matched"] == Decimal("2.0400")
 
@@ -85,11 +83,15 @@ async def test_insert_fill_persists(pg_pool: asyncpg.Pool):
 async def test_fetch_open_orders_distinct_on_latest(pg_pool: asyncpg.Pool):
     """Two events for the same customer_order_ref: latest wins, only one row returned."""
     dec_id = uuid4()
-    e1 = _make_order_event(decision_id=dec_id, status=OrderStatus.PENDING,
-                            event_type=OrderEventType.PLACED)
-    e2 = _make_order_event(decision_id=dec_id, status=OrderStatus.EXECUTABLE,
-                            event_type=OrderEventType.LIFECYCLE,
-                            matched_size=Decimal("0"))
+    e1 = _make_order_event(
+        decision_id=dec_id, status=OrderStatus.PENDING, event_type=OrderEventType.PLACED
+    )
+    e2 = _make_order_event(
+        decision_id=dec_id,
+        status=OrderStatus.EXECUTABLE,
+        event_type=OrderEventType.LIFECYCLE,
+        matched_size=Decimal("0"),
+    )
 
     async with pg_pool.acquire() as conn:
         await insert_order_event(conn, e1)

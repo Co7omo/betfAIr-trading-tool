@@ -25,8 +25,12 @@ def test_compute_stake_capped_at_max_fraction():
     # Without cap: 1000 * 0.25 * 0.10 = 25.0
     # With cap: 1000 * 0.02 = 20.0
     stake = compute_stake(
-        bankroll=1000.0, p_model=0.55, odds=2.0,
-        kelly_multiplier=0.25, max_stake_fraction=0.02, min_stake=2.0,
+        bankroll=1000.0,
+        p_model=0.55,
+        odds=2.0,
+        kelly_multiplier=0.25,
+        max_stake_fraction=0.02,
+        min_stake=2.0,
     )
     assert stake == Decimal("20.00")
 
@@ -35,8 +39,12 @@ def test_compute_stake_below_min_returns_none():
     # Bankroll=10, kelly_mult=0.25, p=0.55, o=2.0
     # raw = 10 * 0.25 * 0.10 = 0.25 → below min_stake=2.0
     stake = compute_stake(
-        bankroll=10.0, p_model=0.55, odds=2.0,
-        kelly_multiplier=0.25, max_stake_fraction=0.02, min_stake=2.0,
+        bankroll=10.0,
+        p_model=0.55,
+        odds=2.0,
+        kelly_multiplier=0.25,
+        max_stake_fraction=0.02,
+        min_stake=2.0,
     )
     assert stake is None
 
@@ -44,7 +52,11 @@ def test_compute_stake_below_min_returns_none():
 def test_compute_stake_zero_kelly_returns_none():
     # Negative edge → kelly_fraction=0 → stake=0 → < min → None
     stake = compute_stake(
-        bankroll=1000.0, p_model=0.40, odds=2.0,
-        kelly_multiplier=0.25, max_stake_fraction=0.02, min_stake=2.0,
+        bankroll=1000.0,
+        p_model=0.40,
+        odds=2.0,
+        kelly_multiplier=0.25,
+        max_stake_fraction=0.02,
+        min_stake=2.0,
     )
     assert stake is None

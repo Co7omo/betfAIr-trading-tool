@@ -224,9 +224,7 @@ async def insert_model_inference(conn: asyncpg.Connection, mi: ModelInference) -
     )
 
 
-async def insert_order_event(
-    conn: asyncpg.Connection, event: OrderEvent
-) -> uuid.UUID:
+async def insert_order_event(conn: asyncpg.Connection, event: OrderEvent) -> uuid.UUID:
     return await conn.fetchval(
         """INSERT INTO orders
            (order_event_id, customer_order_ref, decision_id, market_id, event_id,
@@ -273,9 +271,7 @@ async def insert_fill(conn: asyncpg.Connection, fill: Fill) -> uuid.UUID:
     )
 
 
-async def fetch_open_orders(
-    conn: asyncpg.Connection, mode: ExecutionMode
-) -> list[OrderEvent]:
+async def fetch_open_orders(conn: asyncpg.Connection, mode: ExecutionMode) -> list[OrderEvent]:
     """Return the current state of every order that is still open (PENDING or
     EXECUTABLE), filtered by execution mode."""
     rows = await conn.fetch(
