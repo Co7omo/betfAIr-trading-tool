@@ -16,12 +16,16 @@ class Scheduler:
         poll_interval: int = 10,
         discovery_interval: int = 300,
         keepalive_interval: int = 3600,
+        reconciler=None,
+        reconcile_interval: int = 10,
     ):
         self._collector = collector
         self._bf_client = bf_client
         self._poll_interval = poll_interval
         self._discovery_interval = discovery_interval
         self._keepalive_interval = keepalive_interval
+        self._reconciler = reconciler
+        self._reconcile_interval = reconcile_interval
         self._running = False
         self._on_snapshot = None
 
@@ -41,6 +45,10 @@ class Scheduler:
             asyncio.create_task(self._poll_loop(), name="polling"),
             asyncio.create_task(self._keepalive_loop(), name="keepalive"),
         ]
+        if self._reconciler is not None:
+            tasks.append(
+                asyncio.create_task(self._reconcile_loop(), name="reconcile")
+            )
 
         try:
             await asyncio.gather(*tasks)
@@ -89,3 +97,11 @@ class Scheduler:
                 await bf_auth.keep_alive(self._bf_client)
             except Exception:
                 log.exception("keepalive_error")
+
+    async def _reconcile_loop(self) -> None:
+        while self._running:
+            try:
+                await self._reconciler.reconcile_open_orders()
+            except Exception:
+                log.exception("reconcile_error")
+            await asyncio.sleep(self._reconcile_interval)
