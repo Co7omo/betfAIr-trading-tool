@@ -10,6 +10,14 @@ from betfair_trading.models.external import ExternalFeatureBundle
 from betfair_trading.models.features import FeatureVector
 from betfair_trading.models.inference import ModelInference, ModelVersion
 from betfair_trading.models.market import MarketCatalogue, MarketSnapshotBundle
+from betfair_trading.models.order import (
+    ExecutionMode,
+    Fill,
+    OrderEvent,
+    OrderEventType,
+    OrderSide,
+    OrderStatus,
+)
 
 
 async def insert_market(conn: asyncpg.Connection, catalogue: MarketCatalogue) -> None:
@@ -214,3 +222,97 @@ async def insert_model_inference(conn: asyncpg.Connection, mi: ModelInference) -
         mi.feature_vector_ids,
         json.dumps(mi.features_used, default=str),
     )
+
+
+async def insert_order_event(conn: asyncpg.Connection, event: OrderEvent) -> uuid.UUID:
+    return await conn.fetchval(
+        """INSERT INTO orders
+           (order_event_id, customer_order_ref, decision_id, market_id, event_id,
+            selection_id, side, requested_price, requested_size,
+            matched_size, average_price_matched, status, event_type,
+            api_response, mode)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+           RETURNING order_event_id""",
+        event.order_event_id,
+        event.customer_order_ref,
+        event.decision_id,
+        event.market_id,
+        event.event_id,
+        event.selection_id,
+        event.side.value,
+        event.requested_price,
+        event.requested_size,
+        event.matched_size,
+        event.average_price_matched,
+        event.status.value,
+        event.event_type.value,
+        json.dumps(event.api_response, default=str) if event.api_response else None,
+        event.mode.value,
+    )
+
+
+async def insert_fill(conn: asyncpg.Connection, fill: Fill) -> uuid.UUID:
+    return await conn.fetchval(
+        """INSERT INTO fills
+           (fill_id, customer_order_ref, decision_id, market_id, selection_id,
+            matched_size_delta, average_price_matched,
+            cumulative_matched_size, remaining_size)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+           RETURNING fill_id""",
+        fill.fill_id,
+        fill.customer_order_ref,
+        fill.decision_id,
+        fill.market_id,
+        fill.selection_id,
+        fill.matched_size_delta,
+        fill.average_price_matched,
+        fill.cumulative_matched_size,
+        fill.remaining_size,
+    )
+
+
+async def fetch_open_orders(conn: asyncpg.Connection, mode: ExecutionMode) -> list[OrderEvent]:
+    """Return the current state of every order that is still open (PENDING or
+    EXECUTABLE), filtered by execution mode."""
+    rows = await conn.fetch(
+        """
+        WITH latest AS (
+          SELECT DISTINCT ON (customer_order_ref)
+            order_event_id, customer_order_ref, decision_id, market_id, event_id,
+            selection_id, side, requested_price, requested_size,
+            matched_size, average_price_matched, status, event_type,
+            event_ts, api_response, mode
+          FROM orders
+          WHERE mode = $1
+          ORDER BY customer_order_ref, event_ts DESC
+        )
+        SELECT * FROM latest
+        WHERE status IN ('PENDING', 'EXECUTABLE')
+        """,
+        mode.value,
+    )
+    return [
+        OrderEvent(
+            order_event_id=r["order_event_id"],
+            customer_order_ref=r["customer_order_ref"],
+            decision_id=r["decision_id"],
+            market_id=r["market_id"],
+            event_id=r["event_id"],
+            selection_id=r["selection_id"],
+            side=OrderSide(r["side"]),
+            requested_price=r["requested_price"],
+            requested_size=r["requested_size"],
+            matched_size=r["matched_size"],
+            average_price_matched=r["average_price_matched"],
+            status=OrderStatus(r["status"]),
+            event_type=OrderEventType(r["event_type"]),
+            event_ts=r["event_ts"],
+            api_response=(
+                json.loads(r["api_response"])
+                if isinstance(r["api_response"], str)
+                else r["api_response"]
+            ),
+            mode=ExecutionMode(r["mode"]),
+        )
+        for r in rows
+    ]

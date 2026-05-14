@@ -15,13 +15,17 @@ from betfair_trading.db.writer import insert_config_snapshot
 from betfair_trading.elo.engine import EloEngine
 from betfair_trading.elo.form import FormCalculator
 from betfair_trading.entity_resolution.matcher import TeamMatcher
+from betfair_trading.models.decision import DecisionOutcome
+from betfair_trading.models.order import ExecutionMode
 from betfair_trading.observability.health import start_health_server
 from betfair_trading.observability.logging import configure_logging
 from betfair_trading.services.decision_engine import DecisionEngine
+from betfair_trading.services.execution_engine import ExecutionEngine
 from betfair_trading.services.external_ingestor import ExternalDataIngestor
 from betfair_trading.services.feature_builder import FeatureBuilder
 from betfair_trading.services.market_collector import MarketCollector
 from betfair_trading.services.model_inference_provider import ModelInferenceProvider
+from betfair_trading.services.reconciler import Reconciler
 from betfair_trading.services.scheduler import Scheduler
 from betfair_trading.settings import Settings
 
@@ -88,6 +92,19 @@ async def main() -> None:
         daily_dd_max=trading.get("daily_stop_loss_fraction", 0.05),
     )
 
+    # Initialize execution engine + reconciler (Phase 3 baseline)
+    execution_mode = ExecutionMode(trading.get("execution_mode", "dry_run"))
+    execution_engine = ExecutionEngine(
+        pool=pool,
+        bf_client=bf_client,
+        mode=execution_mode,
+        bankroll=trading.get("initial_bankroll", 1000.0),
+        kelly_multiplier=trading.get("kelly_fraction", 0.25),
+        max_stake_fraction=trading.get("max_stake_fraction", 0.02),
+        min_stake=trading.get("min_stake", 2.0),
+    )
+    reconciler = Reconciler(pool=pool, bf_client=bf_client, mode=execution_mode)
+
     # Initialize market collector
     collector = MarketCollector(
         bf_client,
@@ -102,14 +119,19 @@ async def main() -> None:
         raw_client,
         poll_interval=trading.get("poll_interval", 10),
         discovery_interval=trading.get("discovery_interval", 300),
+        reconciler=reconciler,
+        reconcile_interval=trading.get("reconcile_interval", 10),
     )
 
-    async def on_snapshot_with_decision(bundle, snapshot_ids):
+    async def on_snapshot_with_pipeline(bundle, snapshot_ids):
         fv_ids = await feature_builder.on_market_snapshot(bundle, snapshot_ids)
-        if fv_ids:
-            await decision_engine.evaluate(bundle, snapshot_ids, fv_ids)
+        if not fv_ids:
+            return
+        decision = await decision_engine.evaluate(bundle, snapshot_ids, fv_ids)
+        if decision is not None and decision.decision_outcome == DecisionOutcome.ALLOW:
+            await execution_engine.on_decision_allow(decision)
 
-    scheduler.set_snapshot_callback(on_snapshot_with_decision)
+    scheduler.set_snapshot_callback(on_snapshot_with_pipeline)
 
     # Start health check server
     health_runner = await start_health_server(pool, settings.health_port)

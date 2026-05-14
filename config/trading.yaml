@@ -17,6 +17,11 @@ trading:
   min_liquidity: 100.0
   max_spread: 0.10
 
+  # Execution engine settings
+  execution_mode: dry_run
+  min_stake: 2.0
+  reconcile_interval: 10
+
 risk:
   # Fractional Kelly multiplier
   kelly_fraction: 0.25

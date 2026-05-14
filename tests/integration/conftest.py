@@ -65,7 +65,7 @@ async def clean_db(pg_pool: asyncpg.Pool) -> AsyncIterator[None]:
         await conn.execute(
             "TRUNCATE markets, runners, market_snapshots, "
             "external_feature_snapshots, feature_vectors, config_snapshots, "
-            "decisions, model_versions, model_inferences "
+            "decisions, model_versions, model_inferences, orders, fills "
             "RESTART IDENTITY CASCADE"
         )
     yield
